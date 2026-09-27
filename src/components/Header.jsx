@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import Logo from "./Logo";
 
 const TABS = [
@@ -9,6 +9,17 @@ const TABS = [
 ];
 
 const Header = forwardRef(function Header({ route, onNavigate, theme, onToggleTheme, onGoTop }, ref) {
+  const [showTop, setShowTop] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setShowTop(window.scrollY > 300);
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
     <header className="site-head" ref={ref}>
       <div className="site-head-top">
@@ -52,13 +63,13 @@ const Header = forwardRef(function Header({ route, onNavigate, theme, onToggleTh
             {tab.label}
           </a>
         ))}
-       <button
-  className={`tab to-top${window.scrollY > 300 ? " show" : ""}`}
-  onClick={onGoTop}
-  title="Back to top"
->
-  ↑ Top
-</button>
+        <button
+          className={`tab to-top${showTop ? " show" : ""}`}
+          onClick={onGoTop}
+          title="Back to top"
+        >
+          &uarr; Top
+        </button>
       </nav>
     </header>
   );

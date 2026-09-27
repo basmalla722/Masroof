@@ -58,8 +58,7 @@ export default function App() {
       </main>
 
       {route === "dashboard" && transactions.length > 0 && (
-        <section className="card foot-summary">
-          <h2>Month at a glance</h2>
+        <section className="foot-summary">
           <Summary
             transactions={monthTransactions}
             budget={budget}
