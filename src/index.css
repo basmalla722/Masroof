@@ -63,8 +63,8 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-  font-size: 15px;
-  line-height: 1.55;
+  font-size: 16px;
+  line-height: 1.62;
   transition: background 0.25s, color 0.25s;
 }
 
@@ -75,17 +75,20 @@ h3 {
 }
 
 h2 {
-  margin: 0 0 14px;
-  font-size: 17px;
+  margin: 0 0 16px;
+  font-size: 18px;
+  line-height: 1.35;
 }
 
 h3 {
-  margin: 20px 0 9px;
-  font-size: 13px;
+  margin: 24px 0 10px;
+  font-size: 13.5px;
+  line-height: 1.4;
   text-transform: uppercase;
   letter-spacing: 0.7px;
   color: var(--muted);
 }
+
 
 p {
   margin: 0 0 10px;
@@ -117,25 +120,25 @@ main:focus {
 .split {
   display: grid;
   grid-template-columns: 360px 1fr;
-  gap: 20px;
+  gap: 24px;
   align-items: start;
 }
 
 .dash-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
+  gap: 24px;
   align-items: start;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .stack {
   display: grid;
-  gap: 20px;
+  gap: 24px;
 }
 
 .foot-summary {
-  margin-top: 20px;
+  margin-top: 24px;
 }
 
 /* =========================================================
@@ -165,7 +168,7 @@ main:focus {
 .brand {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: 14px;
   text-decoration: none;
   border-radius: var(--radius-sm);
 }
@@ -183,7 +186,7 @@ main:focus {
 
 .brand-text em {
   font-style: normal;
-  font-size: 12px;
+  font-size: 13.5px;
   color: var(--muted);
 }
 
@@ -203,7 +206,7 @@ main:focus {
 
 .tabs {
   display: flex;
-  gap: 2px;
+  gap: 5px;
   max-width: 1120px;
   margin: 12px auto 0;
   overflow-x: auto;
@@ -222,7 +225,7 @@ main:focus {
   background: transparent;
   color: var(--muted);
   font: inherit;
-  font-size: 14px;
+  font-size: 16px;
   text-decoration: none;
   cursor: pointer;
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
@@ -307,7 +310,7 @@ main:focus {
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 18px;
+  padding: 22px;
   box-shadow: var(--shadow);
   transition: box-shadow 0.25s var(--ease), transform 0.25s var(--ease);
 }
@@ -335,7 +338,7 @@ main:focus {
   border-radius: 999px;
   background: var(--accent-soft);
   color: var(--accent);
-  font-size: 12px;
+  font-size: 13.5px;
   text-align: center;
 }
 
@@ -346,7 +349,7 @@ main:focus {
 .form label {
   display: block;
   margin-bottom: 5px;
-  font-size: 12px;
+  font-size: 13.5px;
   font-weight: 600;
   color: var(--muted);
   text-transform: uppercase;
@@ -388,7 +391,7 @@ main:focus {
 
 .form-actions {
   display: flex;
-  gap: 9px;
+  gap: 12px;
   margin-top: 4px;
 }
 
@@ -403,7 +406,7 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 12px;
   border-radius: var(--radius-sm);
   font: inherit;
   cursor: pointer;
@@ -448,7 +451,7 @@ button {
 
 .icon-button {
   flex: 0 0 auto;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .mini {
@@ -456,7 +459,7 @@ button {
   border: 1px solid var(--line);
   background: var(--card);
   color: var(--muted);
-  font-size: 12.5px;
+  font-size: 14px;
 }
 
 .mini:hover {
@@ -494,7 +497,7 @@ button {
 .list li {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 13px;
   padding: 10px 0;
   border-top: 1px solid var(--line);
 }
@@ -506,7 +509,7 @@ button {
 .list-main {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 13px;
   min-width: 0;
   flex: 1 1 auto;
 }
@@ -525,14 +528,14 @@ button {
 }
 
 .list-meta {
-  font-size: 12.5px;
+  font-size: 14px;
   color: var(--muted);
 }
 
 .list-side {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 13px;
   flex: 0 0 auto;
 }
 
@@ -551,7 +554,7 @@ button {
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 12px;
   margin-bottom: 14px;
 }
 
@@ -562,7 +565,7 @@ button {
   background: var(--card);
   color: var(--muted);
   font: inherit;
-  font-size: 12.5px;
+  font-size: 14px;
   cursor: pointer;
   transition: all var(--speed) var(--ease);
 }
@@ -591,7 +594,7 @@ button {
   background: transparent;
   color: inherit;
   opacity: 0.45;
-  font-size: 12px;
+  font-size: 13.5px;
   line-height: 1;
   cursor: pointer;
   transition: opacity var(--speed) var(--ease), background var(--speed) var(--ease);
@@ -614,7 +617,7 @@ button {
 
 .hint-text {
   margin: -2px 0 4px;
-  font-size: 12.5px;
+  font-size: 14px;
   color: var(--muted);
 }
 
@@ -670,7 +673,7 @@ button {
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 6px;
-  font-size: 13.5px;
+  font-size: 14.5px;
 }
 
 .breakdown-name {
@@ -691,7 +694,7 @@ button {
   border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--accent) 12%, transparent);
   color: var(--text);
-  font-size: 13.5px;
+  font-size: 14.5px;
 }
 
 .warning.over {
@@ -702,7 +705,7 @@ button {
 .error {
   margin: -7px 0 11px;
   color: var(--danger);
-  font-size: 12.5px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -726,7 +729,7 @@ button {
   justify-content: space-between;
   gap: 12px;
   margin: 8px 0 12px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--muted);
 }
 
@@ -773,24 +776,24 @@ button {
 .insight-head {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 14px;
 }
 
 .insight-title {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .insight-body {
   margin: 4px 0 0;
-  font-size: 13.5px;
+  font-size: 14.5px;
   color: var(--muted);
 }
 
 /* Provenance for a modelled number, so it is never read as measured fact. */
 .insight-note {
   margin: 6px 0 0;
-  font-size: 11.5px;
+  font-size: 14px;
   line-height: 1.5;
   color: var(--muted);
   opacity: 0.75;
@@ -801,14 +804,14 @@ button {
 .projection-card {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 13px;
 }
 
 .projection-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 14px;
 }
 
 .projection-head h2 {
@@ -817,7 +820,7 @@ button {
 
 .badge {
   flex: none;
-  font-size: 10.5px;
+  font-size: 13.5px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--muted);
@@ -836,7 +839,7 @@ button {
 .projection-figure {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 5px;
 }
 
 .projection-figure.muted .plan-figure {
@@ -845,8 +848,8 @@ button {
 
 .projection-why {
   margin: 0;
-  font-size: 13px;
-  line-height: 1.55;
+  font-size: 14px;
+  line-height: 1.62;
   color: var(--muted);
 }
 
@@ -858,7 +861,7 @@ button {
 
 .rule-list li {
   display: flex;
-  gap: 10px;
+  gap: 13px;
   padding: 10px 0;
   border-top: 1px solid var(--line);
 }
@@ -868,12 +871,12 @@ button {
 }
 
 .rule-list strong {
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .rule-list p {
   margin: 2px 0 0;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--muted);
 }
 
@@ -925,7 +928,7 @@ button {
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 5px;
-  font-size: 13.5px;
+  font-size: 14.5px;
 }
 
 .chart-bar-name {
@@ -944,7 +947,7 @@ button {
 .chart-bar-value em {
   margin-left: 7px;
   font-style: normal;
-  font-size: 12px;
+  font-size: 13.5px;
 }
 
 .chart-bar-track {
@@ -1011,13 +1014,13 @@ button {
 }
 
 .donut-centre-label {
-  font-size: 12px;
+  font-size: 13.5px;
   color: var(--muted);
 }
 
 .trend {
   display: grid;
-  gap: 7px;
+  gap: 13px;
 }
 
 .trend-svg {
@@ -1044,13 +1047,13 @@ button {
 .trend-axis {
   display: flex;
   justify-content: space-between;
-  font-size: 11.5px;
+  font-size: 14px;
   color: var(--muted);
 }
 
 .plan-total {
   display: grid;
-  gap: 2px;
+  gap: 5px;
   margin-bottom: 12px;
 }
 
@@ -1062,7 +1065,7 @@ button {
 }
 
 .plan-label {
-  font-size: 12.5px;
+  font-size: 14px;
   color: var(--muted);
 }
 
@@ -1096,7 +1099,7 @@ button {
   max-width: 46ch;
   margin: 0 auto 12px;
   color: var(--muted);
-  font-size: 13.5px;
+  font-size: 14.5px;
 }
 
 .state-mark {
@@ -1325,9 +1328,11 @@ button {
   }
 
   .income-amount,
-  .plan-figure {
-    font-size: 24px;
-  }
+.plan-figure {
+  font-size: 30px;
+  letter-spacing: -0.6px;
+}
+
 
   .donut {
     width: min(190px, 62vw);
@@ -1353,6 +1358,6 @@ button {
 @media (max-width: 400px) {
   .tab {
     padding: 9px 11px 11px;
-    font-size: 13.5px;
+    font-size: 14.5px;
   }
 }
