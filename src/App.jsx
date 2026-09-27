@@ -41,7 +41,7 @@ export default function App() {
         theme={theme}
         onToggleTheme={toggleTheme}
         onGoTop={() =>
-          window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" })
+          window.scrollTo({ top: 0, behavior: "smooth" })
         }
       />
 

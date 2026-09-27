@@ -52,9 +52,13 @@ const Header = forwardRef(function Header({ route, onNavigate, theme, onToggleTh
             {tab.label}
           </a>
         ))}
-        <button className="tab to-top" onClick={onGoTop} title="Back to top">
-          ↑ Top
-        </button>
+       <button
+  className={`tab to-top${window.scrollY > 300 ? " show" : ""}`}
+  onClick={onGoTop}
+  title="Back to top"
+>
+  ↑ Top
+</button>
       </nav>
     </header>
   );

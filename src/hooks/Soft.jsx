@@ -15,7 +15,13 @@ export default function Soft({
 }) {
   const [ref, inView] = useInView({ threshold: 0.05 });
   const [settled, setSettled] = useState(false);
+
   const nodeRef = useRef(null);
+  const currentY = useRef(0);
+  const currentOpacity = useRef(1);
+  const targetY = useRef(0);
+  const targetOpacity = useRef(1);
+  const frameRef = useRef(0);
 
   useEffect(() => {
     nodeRef.current = ref.current;
@@ -23,43 +29,89 @@ export default function Soft({
 
   useEffect(() => {
     if (!inView) return;
-    const timer = setTimeout(() => setSettled(true), REVEAL_MS + delay);
+
+    const timer = setTimeout(() => {
+      setSettled(true);
+    }, REVEAL_MS + delay);
+
     return () => clearTimeout(timer);
   }, [inView, delay]);
 
   useEffect(() => {
     const node = nodeRef.current;
+
     if (!node || !settled) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    let frame = 0;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
 
-    function update() {
-      frame = 0;
+    const updateTarget = () => {
       const rect = node.getBoundingClientRect();
       const vh = window.innerHeight;
 
       if (rect.bottom < -80 || rect.top > vh + 80) return;
 
       const delta = rect.top + rect.height / 2 - vh / 2;
-      const shift = clamp(-delta * gain, -distance, distance);
-      const opacity = 1 - (Math.abs(delta) / (vh / 2)) * (1 - fadeTo);
 
-      node.style.transform = `translate3d(0, ${shift.toFixed(2)}px, 0)`;
-      node.style.opacity = opacity.toFixed(3);
-    }
+      targetY.current = clamp(
+        -delta * gain,
+        -distance,
+        distance
+      );
 
-    function onScroll() {
-      if (!frame) frame = requestAnimationFrame(update);
-    }
+      targetOpacity.current = clamp(
+        1 - (Math.abs(delta) / (vh / 2)) * (1 - fadeTo),
+        fadeTo,
+        1
+      );
+    };
 
-    update();
+    const animate = () => {
+      frameRef.current = 0;
+
+      currentY.current +=
+        (targetY.current - currentY.current) * 0.12;
+
+      currentOpacity.current +=
+        (targetOpacity.current - currentOpacity.current) * 0.12;
+
+      node.style.transform = `translate3d(0, ${currentY.current.toFixed(
+        2
+      )}px, 0)`;
+
+      node.style.opacity = currentOpacity.current.toFixed(3);
+
+      if (
+        Math.abs(targetY.current - currentY.current) > 0.05 ||
+        Math.abs(targetOpacity.current - currentOpacity.current) > 0.005
+      ) {
+        frameRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    const onScroll = () => {
+      updateTarget();
+
+      if (!frameRef.current) {
+        frameRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    updateTarget();
+    frameRef.current = requestAnimationFrame(animate);
+
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
+
     return () => {
-      if (frame) cancelAnimationFrame(frame);
+      if (frameRef.current) {
+        cancelAnimationFrame(frameRef.current);
+      }
+
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
+
       node.style.transform = "";
       node.style.opacity = "";
     };
@@ -75,7 +127,11 @@ export default function Soft({
     .join(" ");
 
   return (
-    <div ref={ref} className={classes} style={delay ? { "--d": `${delay}ms` } : undefined}>
+    <div
+      ref={ref}
+      className={classes}
+      style={delay ? { "--d": `${delay}ms` } : undefined}
+    >
       {children}
     </div>
   );

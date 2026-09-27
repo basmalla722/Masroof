@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useData } from "../context/DataContext";
 import BudgetPanel from "../components/BudgetPanel";
 import IncomePanel from "../components/IncomePanel";
+import ProjectionPanel from "../components/ProjectionPanel";
 import { useDerived } from "./Dashboard";
 import CategoryBars from "../components/charts/CategoryBars";
 import { EmptyState } from "../components/states";
@@ -79,6 +80,7 @@ export default function Budgets() {
         />
 
         <div className="stack">
+          <ProjectionPanel monthTransactions={monthTransactions} income={income} />
           {chartData.length === 0 ? (
             <EmptyState
               title="No spending to compare"

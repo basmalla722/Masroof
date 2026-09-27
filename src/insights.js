@@ -1,21 +1,18 @@
 ﻿import { DEFAULT_CATEGORIES } from "./data.js";
 import { predict, modelInfo } from "./ml/predict.js";
+import { projectionInput, monthTotals } from "./ml/month.js";
+import { currentMonthKey } from "./ml/monthKey.js";
 import { formatCurrency, monthKey } from "./utils/format.js";
+
+export { currentMonthKey };
 
 const SHARE_ALERT = 0.35;
 const SAVINGS_CUT = 0.2;
 
-function daysInMonth(key) {
-  return new Date(Number(key.slice(0, 4)), Number(key.slice(5, 7)), 0).getDate();
-}
-
-export function currentMonthKey() {
-  return new Date().toISOString().slice(0, 7);
-}
-
 // The trained model's own metadata, so a view can label a projection and state
 // where the number came from instead of implying it is measured fact.
 export { modelInfo };
+
 
 export function analyse(
   transactions,
@@ -28,24 +25,13 @@ export function analyse(
   const limitOf = (name) => budget[name] ?? 0;
 
   const monthItems = transactions.filter((t) => monthKey(t.date) === month);
-  const total = monthItems.reduce((sum, t) => sum + t.amount, 0);
+  const { total, topCategorySpend, distinctCategories } = monthTotals(monthItems);
 
   const byCategory = Object.fromEntries(categories.map((c) => [c.name, 0]));
   for (const t of monthItems) {
     if (t.category in byCategory) byCategory[t.category] += t.amount;
   }
 
-  // Concentration and spread must be measured over every category the user
-  // actually spent in, including their own "Other" names. byCategory only
-  // covers the defaults, and training defined these features over all
-  // categories, so deriving them from byCategory would quietly feed the model
-  // different numbers than it was trained on.
-  const spendPerName = new Map();
-  for (const t of monthItems) {
-    spendPerName.set(t.category, (spendPerName.get(t.category) || 0) + t.amount);
-  }
-  const topCategorySpend = Math.max(0, ...spendPerName.values());
-  const distinctCategories = spendPerName.size;
 
 
   if (income > 0) {
@@ -61,22 +47,12 @@ export function analyse(
         )} - a shortfall of ${formatCurrency(total - income)}.`,
       });
     } else if (month === currentMonthKey()) {
-      const limit = daysInMonth(month);
-      const elapsed = new Date().getDate();
-
+      const { input, elapsed } = projectionInput(monthItems, income, month);
       // The projection comes from a model trained offline, not a spend-rate
       // rule. It beats the naive rule by ~29% MAE on held-out users, because
       // real months are not flat: payday, weekends and a quiet last few days
       // all bend the curve. See model/train.py.
-      const projection = predict({
-        total,
-        elapsed,
-        daysInMonth: limit,
-        income,
-        txCount: monthItems.length,
-        topCategoryShare: total > 0 ? topCategorySpend / total : 0,
-        nCategories: distinctCategories,
-      });
+      const projection = predict(input);
 
       if (projection.projected > income) {
         const range = projection.error
@@ -119,9 +95,10 @@ export function analyse(
     });
   }
 
-  const limit = daysInMonth(month);
+  const limit = new Date(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 0).getDate();
   const elapsed = month === currentMonthKey() ? new Date().getDate() : limit;
   const pace = elapsed > 0 ? (total / elapsed) * limit : 0;
+
 
   for (const c of categories) {
     if (limitOf(c.name) === 0 || byCategory[c.name] === 0) continue;

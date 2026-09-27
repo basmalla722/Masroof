@@ -798,6 +798,58 @@ button {
   padding-inline-start: 8px;
 }
 
+.projection-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.projection-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.projection-head h2 {
+  margin: 0;
+}
+
+.badge {
+  flex: none;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px 9px;
+  white-space: nowrap;
+}
+
+.projection-figures {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.projection-figure {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.projection-figure.muted .plan-figure {
+  color: var(--muted);
+}
+
+.projection-why {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
 .rule-list {
   list-style: none;
   margin: 0;
