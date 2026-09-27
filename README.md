@@ -19,6 +19,104 @@ per day for the rest of the month.
 The insights are the product, not the chart. Everything is written in plain
 English on purpose.
 
+## The ML is the interesting part
+
+The app answers one question: *it is day 14 and I have spent this much, what will
+I finish the month at?* The first version used a rule:
+
+```js
+projected = (spent / daysElapsed) * daysInMonth
+```
+
+That rule assumes a month is flat, and months are not. Day 3 looks cheap when it
+carries almost no information, and a payday splurge gets extrapolated across the
+rest of the month. So it is a **trained model** now, not a formula:
+
+| | MAE on 4,792 unseen users | MAPE |
+|---|---|---|
+| naive spend-rate rule | 1146.7 | 19.4% |
+| **linear regression (shipped)** | **838.9** | **15.9%** |
+| quadratic regression | 791.7 | 14.4% |
+| gradient boosting | 807.2 | 14.7% |
+
+**26.8% lower error than the rule it replaced.** Twelve features, trained on
+4,000 simulated users, exported as twelve coefficients and an intercept. There is
+no ML library in the browser: inference is a dot product, so the project still
+ships with two dependencies.
+
+The training data is synthetic and the UI says so on the card that shows the
+number. Why the shipped model is the linear one, how the features are built, and
+how the model refuses to answer outside the range it was trained on: in
+[The projection model](#the-projection-model).
+
+## The projection model
+
+The app has to answer one question: *it is day 14 and I have spent this much,
+what will I finish the month at?*
+
+The first version answered it with a rule:
+
+```js
+projected = (spent / daysElapsed) * daysInMonth
+```
+
+That assumes spending is flat across the month, and it is not. People get paid
+at the start, weekends cost more, and the last few days are usually quiet. The
+rule gets the early month badly wrong, which is exactly when someone most wants
+to know if they are in trouble.
+
+So the rule was replaced with a model.
+
+**How it works.** `model/generate_data.py` simulates 4,000 synthetic users
+living through 30-day months: an income level, a category mix, a payday bump, a
+weekend bump, a quiet end of month, and a per-user "discipline" parameter.
+`model/train.py` learns to predict the final month total from what is known on
+day N, and exports the coefficients to `src/ml/weights.js`.
+
+**The result**, on 4,792 observations from users the model never saw during
+training:
+
+| model | MAE | MAPE |
+|---|---|---|
+| naive spend-rate rule | 1146.7 | 19.4% |
+| **linear regression (shipped)** | **838.9** | **15.9%** |
+| quadratic regression | 791.7 | 14.4% |
+| gradient boosting | 807.2 | 14.7% |
+
+**26.8% lower error than the rule it replaced.**
+
+Where the difference comes from, on a 6,000 income:
+
+| | spent so far | naive | model |
+|---|---|---|---|
+| day 3, slow start | 210 | 2,100 | **3,474** |
+| day 15, payday splurge | 4,100 | 8,200 | **7,238** |
+| day 28, nearly done | 5,200 | 5,571 | **5,760** |
+
+On day 3 the rule says you are fine because three quiet days look cheap. The
+model knows three days tells you almost nothing. After a payday splurge the
+rule catastrophically overshoots, because it assumes the splurge continues. The
+model pulls back.
+
+**Why a linear model and not gradient boosting.** Boosting was measured and it
+was *worse* than linear regression on this data, which says the relationship is
+close to linear and the extra machinery buys nothing. Shipping a linear model
+also means inference is a dot product, so the browser needs no ML library at
+all and the dependency count stays at two. The quadratic model was 3% better
+than linear, not enough to justify hand-maintaining 90 coefficients in two
+languages that have to stay in sync.
+
+**What this does not prove.** The training data is synthetic. These numbers
+show the pipeline works and that the features carry real signal, on data shaped
+the way real spending is shaped. They are not a claim about how well the model
+predicts a real person's month, and it will not be, because a model trained on
+invented users has never seen a real one. The honest next step is to log
+projections and outcomes from actual users, then retrain on that. The feature
+extractor's input is already the shape that data would take.
+
+There is no API key and no server involved. The model ships as 13 numbers (12
+coefficients and an intercept) and inference is a dot product over a 12-element
+vector.
 ## Privacy
 
 No account, no backend, no server-side storage. Data is stored locally in your
@@ -162,74 +260,6 @@ setBudgetLimit  deleteBudgetLimit  clearBudget  setIncome
 categories)`. It has no React in it, which is what makes the rules easy to test
 and easy to reuse, and it is what the projection model sits on top of.
 
-## The projection model
-
-The app has to answer one question: *it is day 14 and I have spent this much,
-what will I finish the month at?*
-
-The first version answered it with a rule:
-
-```js
-projected = (spent / daysElapsed) * daysInMonth
-```
-
-That assumes spending is flat across the month, and it is not. People get paid
-at the start, weekends cost more, and the last few days are usually quiet. The
-rule gets the early month badly wrong, which is exactly when someone most wants
-to know if they are in trouble.
-
-So the rule was replaced with a model.
-
-**How it works.** `model/generate_data.py` simulates 4,000 synthetic users
-living through 30-day months: an income level, a category mix, a payday bump, a
-weekend bump, a quiet end of month, and a per-user "discipline" parameter.
-`model/train.py` learns to predict the final month total from what is known on
-day N, and exports the coefficients to `src/ml/weights.js`.
-
-**The result**, on 4,792 observations from users the model never saw during
-training:
-
-| model | MAE | MAPE |
-|---|---|---|
-| naive spend-rate rule | 1146.7 | 19.4% |
-| **linear regression (shipped)** | **838.9** | **15.9%** |
-| quadratic regression | 791.7 | 14.4% |
-| gradient boosting | 807.2 | 14.7% |
-
-**26.8% lower error than the rule it replaced.**
-
-Where the difference comes from, on a 6,000 income:
-
-| | spent so far | naive | model |
-|---|---|---|---|
-| day 3, slow start | 210 | 2,100 | **3,474** |
-| day 15, payday splurge | 4,100 | 8,200 | **7,238** |
-| day 28, nearly done | 5,200 | 5,571 | **5,760** |
-
-On day 3 the rule says you are fine because three quiet days look cheap. The
-model knows three days tells you almost nothing. After a payday splurge the
-rule catastrophically overshoots, because it assumes the splurge continues. The
-model pulls back.
-
-**Why a linear model and not gradient boosting.** Boosting was measured and it
-was *worse* than linear regression on this data, which says the relationship is
-close to linear and the extra machinery buys nothing. Shipping a linear model
-also means inference is a dot product, so the browser needs no ML library at
-all and the dependency count stays at two. The quadratic model was 3% better
-than linear, not enough to justify hand-maintaining 90 coefficients in two
-languages that have to stay in sync.
-
-**What this does not prove.** The training data is synthetic. These numbers
-show the pipeline works and that the features carry real signal, on data shaped
-the way real spending is shaped. They are not a claim about how well the model
-predicts a real person's month, and it will not be, because a model trained on
-invented users has never seen a real one. The honest next step is to log
-projections and outcomes from actual users, then retrain on that. The feature
-extractor's input is already the shape that data would take.
-
-There is no API key and no server involved. The model ships as 13 numbers (12
-coefficients and an intercept) and inference is a dot product over a 12-element
-vector.
 
 ## Decisions and challenges
 
