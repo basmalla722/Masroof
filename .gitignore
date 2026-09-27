@@ -6,3 +6,7 @@ dist
 .env
 .env.*
 !.env.example
+
+# Training data is regenerated deterministically:
+#   python model/generate_data.py
+model/data.csv

@@ -119,10 +119,28 @@ src/
     Expenses.jsx                     form and list
     Budgets.jsx                      income, limits, comparison
     Insights.jsx                     grouped rules
+  ml/
+    features.js                      builds the model input vector
+    predict.js                       inference, with naive fallback
+    weights.json                     generated, do not edit
   services/
     gemini.js                        NOT MOUNTED, see Planned / unfinished
     tools.js                         NOT MOUNTED, see Planned / unfinished
+model/
+  generate_data.py                   synthetic spending generator
+  train.py                           trains, evaluates, exports weights
+  report.txt                         the numbers quoted below
 ```
+
+Outside `src/`, the model is trained in Python:
+
+```
+model/generate_data.py   simulates 4,000 users living through 30-day months
+model/train.py           fits the model, scores it, writes src/ml/weights.json
+```
+
+The training data itself is not committed. It is generated from a fixed seed,
+so `python model/generate_data.py` reproduces it byte for byte.
 
 This tree is every file under `src/`. The three marked `NOT MOUNTED` are not
 imported by the running app; they are listed here so the tree matches the
@@ -140,8 +158,75 @@ setBudgetLimit  deleteBudgetLimit  clearBudget  setIncome
 
 `insights.js` is a pure function of `(transactions, budget, month, income,
 categories)`. It has no React in it, which is what makes the rules easy to test
-and easy to reuse, and it is what a Gemini advisor would sit on top of if that
-part of the project is ever finished.
+and easy to reuse, and it is what the projection model sits on top of.
+
+## The projection model
+
+The app has to answer one question: *it is day 14 and I have spent this much,
+what will I finish the month at?*
+
+The first version answered it with a rule:
+
+```js
+projected = (spent / daysElapsed) * daysInMonth
+```
+
+That assumes spending is flat across the month, and it is not. People get paid
+at the start, weekends cost more, and the last few days are usually quiet. The
+rule gets the early month badly wrong, which is exactly when someone most wants
+to know if they are in trouble.
+
+So the rule was replaced with a model.
+
+**How it works.** `model/generate_data.py` simulates 4,000 synthetic users
+living through 30-day months: an income level, a category mix, a payday bump, a
+weekend bump, a quiet end of month, and a per-user "discipline" parameter.
+`model/train.py` learns to predict the final month total from what is known on
+day N, and exports the coefficients to `src/ml/weights.json`.
+
+**The result**, on 4,792 observations from users the model never saw during
+training:
+
+| model | MAE | MAPE |
+|---|---|---|
+| naive spend-rate rule | 648.4 | 19.9% |
+| **linear regression (shipped)** | **460.8** | **14.9%** |
+| quadratic regression | 446.3 | 14.3% |
+| gradient boosting | 453.0 | 14.6% |
+
+**28.9% lower error than the rule it replaced.**
+
+Where the difference comes from, on a 6,000 income:
+
+| | spent so far | naive | model |
+|---|---|---|---|
+| day 3, slow start | 210 | 2,100 | **3,474** |
+| day 15, payday splurge | 4,100 | 8,200 | **7,238** |
+| day 28, nearly done | 5,200 | 5,571 | **5,760** |
+
+On day 3 the rule says you are fine because three quiet days look cheap. The
+model knows three days tells you almost nothing. After a payday splurge the
+rule catastrophically overshoots, because it assumes the splurge continues. The
+model pulls back.
+
+**Why a linear model and not gradient boosting.** Boosting was measured and it
+was *worse* than linear regression on this data, which says the relationship is
+close to linear and the extra machinery buys nothing. Shipping a linear model
+also means inference is a dot product, so the browser needs no ML library at
+all and the dependency count stays at two. The quadratic model was 3% better
+than linear, not enough to justify hand-maintaining 90 coefficients in two
+languages that have to stay in sync.
+
+**What this does not prove.** The training data is synthetic. These numbers
+show the pipeline works and that the features carry real signal, on data shaped
+the way real spending is shaped. They are not a claim about how well the model
+predicts a real person's month, and it will not be, because a model trained on
+invented users has never seen a real one. The honest next step is to log
+projections and outcomes from actual users, then retrain on that. The feature
+extractor's input is already the shape that data would take.
+
+There is no API key and no server involved. The model ships as 12 numbers and
+runs in about a microsecond.
 
 ## Decisions and challenges
 

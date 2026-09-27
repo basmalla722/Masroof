@@ -1,4 +1,5 @@
 ﻿import { DEFAULT_CATEGORIES } from "./data";
+import { predict, modelInfo } from "./ml/predict";
 import { formatCurrency, monthKey } from "./utils/format";
 
 const SHARE_ALERT = 0.35;
@@ -11,6 +12,10 @@ function daysInMonth(key) {
 export function currentMonthKey() {
   return new Date().toISOString().slice(0, 7);
 }
+
+// Exposed so the Budgets view can label the projection and be honest about
+// where the number came from.
+export { modelInfo };
 
 export function analyse(
   transactions,
@@ -30,6 +35,19 @@ export function analyse(
     if (t.category in byCategory) byCategory[t.category] += t.amount;
   }
 
+  // Concentration and spread must be measured over every category the user
+  // actually spent in, including their own "Other" names. byCategory only
+  // covers the defaults, and training defined these features over all
+  // categories, so deriving them from byCategory would quietly feed the model
+  // different numbers than it was trained on.
+  const spendPerName = new Map();
+  for (const t of monthItems) {
+    spendPerName.set(t.category, (spendPerName.get(t.category) || 0) + t.amount);
+  }
+  const topCategorySpend = Math.max(0, ...spendPerName.values());
+  const distinctCategories = spendPerName.size;
+
+
   if (income > 0) {
     if (total > income) {
       insights.push({
@@ -45,8 +63,26 @@ export function analyse(
     } else if (month === currentMonthKey()) {
       const limit = daysInMonth(month);
       const elapsed = new Date().getDate();
-      const projected = (total / elapsed) * limit;
-      if (projected > income) {
+
+      // The projection comes from a model trained offline, not a spend-rate
+      // rule. It beats the naive rule by ~29% MAE on held-out users, because
+      // real months are not flat: payday, weekends and a quiet last few days
+      // all bend the curve. See model/train.py.
+      const projection = predict({
+        total,
+        elapsed,
+        daysInMonth: limit,
+        income,
+        txCount: monthItems.length,
+        topCategoryShare: total > 0 ? topCategorySpend / total : 0,
+        nCategories: distinctCategories,
+      });
+
+      if (projection.projected > income) {
+        const range = projection.error
+          ? ` (give or take ${formatCurrency(Math.round(projection.error))})`
+          : "";
+
         insights.push({
           id: "income-pace",
           level: "warning",
@@ -57,9 +93,9 @@ export function analyse(
             income
           )}, but you are spending about ${formatCurrency(
             Math.round(total / elapsed)
-          )} a day. Projected month total: ${formatCurrency(
-            Math.round(projected)
-          )}.`,
+          )} a day. A model trained on spending patterns puts your month at about ${formatCurrency(
+            Math.round(projection.projected)
+          )}${range}.`,
         });
       }
     }
