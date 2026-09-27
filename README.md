@@ -1,14 +1,12 @@
 # Masroof
 
-**Live demo → [masroof.netlify.app](https://masroof.netlify.app)**
+**Live demo → [masroof-sigma.vercel.app](https://masroof-sigma.vercel.app/)**
 
 A spending tracker that tells you what to do before you run out of money. Add
 your expenses, set a limit per category, and the app reads the numbers back to
 you in plain language.
 
 No account, no backend. Everything stays in the browser.
-
-![Dashboard](docs/dashboard.png)
 
 ---
 
@@ -67,13 +65,19 @@ not the chart.
 
 ## Screenshots
 
-| Expenses | Budgets |
-|---|---|
-| ![Expenses](docs/expenses.png) | ![Budgets](docs/budgets.png) |
+Not captured yet. To generate them, run the app locally with some sample data
+in it and capture each view:
 
-| Insights | Dark mode |
+| File | Route |
 |---|---|
-| ![Insights](docs/insights.png) | ![Dark](docs/dark.png) |
+| `docs/dashboard.png` | `#/dashboard` |
+| `docs/expenses.png` | `#/expenses` |
+| `docs/budgets.png` | `#/budgets` |
+| `docs/insights.png` | `#/insights` |
+
+In Chrome or Edge, open DevTools, press `Ctrl+Shift+P`, run
+`Capture full size screenshot`, and save into `docs/`. The live demo is the
+faster place to do it if you would rather not run anything locally.
 
 ## Architecture
 
