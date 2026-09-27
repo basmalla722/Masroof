@@ -67,12 +67,6 @@ export default function App() {
           />
         </section>
       )}
-
-      <footer className="site-foot">
-        <p>
-          Built with React and Vite. Data stays in this browser — nothing is uploaded.
-        </p>
-      </footer>
     </div>
   );
 }
