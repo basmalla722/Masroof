@@ -4,7 +4,7 @@
 
 **[Live demo →](https://masroof-sigma.vercel.app/)** · **[Source code →](https://github.com/basmalla722/Masroof)**
 
-![Dashboard](docs/dashboard.png)
+![Dashboard](photos/dashboard.png)
 
 ## Why Masroof?
 
@@ -170,11 +170,11 @@ browser data clears your expenses, and there is no sync between devices.
 
 | Expenses | Budgets |
 |---|---|
-| ![Expenses](docs/expenses.png) | ![Budgets](docs/budgets.png) |
+| ![Expenses](photos/expenses.png) | ![Budgets](photos/budgets.png) |
 
 | Insights | Dashboard |
 |---|---|
-| ![Insights](docs/insights.png) | ![Dashboard](docs/dashboard.png) |
+| ![Insights](photos/insights.png) | ![Dashboard](photos/dashboard.png) |
 
 ## Architecture
 
