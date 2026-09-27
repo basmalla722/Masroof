@@ -1,16 +1,16 @@
 Masroof projection model
 ====================================================
-observations: 23967   users: 4000
-train rows: 19175   test rows: 4792 (unseen users)
-test target: median 3168   mean 3366
+observations: 23965   users: 4000
+train rows: 19173   test rows: 4792 (unseen users)
+test target: median 5367   mean 6069
 
 model                                    MAE      MAPE
 ----------------------------------------------------
-naive rule (current app)               648.4     19.9%
-linear regression                      460.8     14.9%
-quadratic regression                   446.3     14.3%
-gradient boosting (reference only)     453.0     14.6%
+naive rule (current app)              1146.7     19.4%
+linear regression                      838.9     15.9%
+quadratic regression                   791.7     14.4%
+gradient boosting (reference only)     807.2     14.7%
 ----------------------------------------------------
-linear vs naive MAE improvement: 28.9%
+linear vs naive MAE improvement: 26.8%
 
 Shipped model: linear regression (flat coefficients, no runtime dep)

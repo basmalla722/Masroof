@@ -45,7 +45,7 @@ export default function App() {
         }
       />
 
-      <main id="main" tabIndex={-1}>
+         <main id="main" tabIndex={-1} key={route} className="rise">
         {route === "dashboard" && (
           <Dashboard />
         )}

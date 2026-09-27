@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import { analyse } from "../src/insights.js";
 import { projectionInput, monthTotals } from "../src/ml/month.js";
 import { currentMonthKey } from "../src/ml/monthKey.js";
+import { findCrossing } from "./helpers.js";
 
 const MONTH = currentMonthKey();
 const tx = (id, amount, category, day) => ({
@@ -66,21 +67,25 @@ test("the panel and the insight rules read the same features", () => {
   // Both call projectionInput, so the number shown on Budgets and the number
   // behind the income-pace insight can never drift apart.
   const items = [
-    tx(1, 180, "Food", 2),
-    tx(2, 240, "Transport", 3),
-    tx(3, 600, "Other", 4),
-    tx(4, 900, "Food", 5),
-    tx(5, 700, "Health", 6),
+    tx(1, 2500, "Other", 4),
+    tx(2, 900, "Food", 5),
+    tx(3, 560, "Transport", 12),
   ];
-  const { input } = projectionInput(items, 2700, MONTH);
-  const insight = analyse(items, {}, MONTH, 2700).find((i) => i.id === "income-pace");
+  const total = 3960;
+  const hit = findCrossing(items, total);
+  assert.ok(hit, "expected a crossing income to exist");
 
-  assert.ok(insight, "expected the projection insight for this spend");
-  assert.equal(input.total, 2620);
-  assert.equal(input.nCategories, 4);
-  // Food is 180 + 900 = 1080, so concentration is on the summed category.
-  assert.ok(Math.abs(input.topCategoryShare - 1080 / 2620) < 1e-12);
   // The insight fired because the model projects over income from these exact
   // inputs, so the shared helper is confirmed to be the source of both.
+  const insight = analyse(items, {}, MONTH, hit.income).find((i) => i.id === "income-pace");
+  assert.ok(insight, `expected the projection insight at income ${hit.income}`);
   assert.match(insight.body, /A model trained on spending patterns/);
+
+  const { input } = projectionInput(items, hit.income, MONTH);
+  assert.equal(input.total, total);
+  assert.equal(input.nCategories, 3);
+  // Concentration sits on the largest single category, Other at 2500.
+  assert.ok(Math.abs(input.topCategoryShare - 2500 / total) < 1e-12);
+  assert.equal(input.income, hit.income);
 });
+

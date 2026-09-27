@@ -22,8 +22,16 @@ export const modelInfo = {
   note: weights._comment || "",
 };
 
-export function naiveProjection({ total, elapsed, daysInMonth }) {
-  return (total / Math.max(elapsed, 1)) * Math.max(daysInMonth, 1);
+export function naiveProjection(raw) {
+  // The fallback has to be safe on its own terms, because it is what gets shown
+  // whenever the model declines to answer. Coerced here so a missing field
+  // cannot turn the fallback into NaN. `raw = {}` only covers undefined, so
+  // null is handled separately.
+  const { total, elapsed, daysInMonth } = raw || {};
+  const spent = Number(total) || 0;
+  const past = Math.max(Number(elapsed) || 0, 1);
+  const span = Math.max(Number(daysInMonth) || 0, 1);
+  return (spent / past) * span;
 }
 
 function linearPrediction(input) {
@@ -33,6 +41,32 @@ function linearPrediction(input) {
     sum += COEFFICIENTS[i] * x[i];
   }
   return Number.isFinite(sum) ? sum : null;
+}
+
+// How far outside the training range each feature sits, 0 when every feature is
+// inside it. A linear model has no idea it is lost outside its training data:
+// it keeps returning a confident number, just a wildly wrong one. Shipping the
+// training ranges with the weights lets us notice instead of guessing.
+function outOfRangeScore(input) {
+  const ranges = weights.feature_ranges;
+  if (!ranges) return 0;
+
+  const x = projectEndOfMonth(input);
+  let worst = 0;
+  for (let i = 0; i < x.length; i += 1) {
+    const range = ranges[FEATURE_NAMES[i]];
+    if (!Array.isArray(range)) continue;
+    const [lo, hi] = range;
+    const value = x[i];
+    // Only wild overshoot counts. Sitting just under the smallest income ever
+    // simulated is unusual, not absurd, and the model still extrapolates sanely.
+    const over = Math.max(lo - value, value - hi, 0);
+    if (over > 0) {
+      const scale = Math.max(Math.abs(hi - lo), 1);
+      worst = Math.max(worst, over / scale);
+    }
+  }
+  return worst;
 }
 
 /**
@@ -47,12 +81,31 @@ export function predict(input) {
   const fallback = naiveProjection(safe);
 
   if (!READY) {
-    return { projected: fallback, method: "naive", error: null };
+    return { projected: fallback, method: "naive", error: null, reason: "no weights" };
+  }
+
+  // Refuse to extrapolate. With income left at zero the income features land
+  // hundreds of times outside anything training ever saw, and the model
+  // answered with a number in the millions. Quietly wrong is worse than the
+  // flat rule it replaced.
+  //
+  // The bar is deliberately forgiving: reject only when a feature sits more
+  // than a full range width outside its training range. A month with three
+  // expenses is thinner than the simulator produces, and that is normal for
+  // someone who just started using the app, so the model should still answer.
+  const ood = outOfRangeScore(safe);
+  if (ood > 1) {
+    return {
+      projected: fallback,
+      method: "naive",
+      error: null,
+      reason: "outside the range this model was trained on",
+    };
   }
 
   const projected = linearPrediction(safe);
   if (projected == null) {
-    return { projected: fallback, method: "naive", error: null };
+    return { projected: fallback, method: "naive", error: null, reason: "not a number" };
   }
 
   const mae = modelInfo.training?.mae ?? null;

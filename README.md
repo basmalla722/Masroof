@@ -191,12 +191,12 @@ training:
 
 | model | MAE | MAPE |
 |---|---|---|
-| naive spend-rate rule | 648.4 | 19.9% |
-| **linear regression (shipped)** | **460.8** | **14.9%** |
-| quadratic regression | 446.3 | 14.3% |
-| gradient boosting | 453.0 | 14.6% |
+| naive spend-rate rule | 1146.7 | 19.4% |
+| **linear regression (shipped)** | **838.9** | **15.9%** |
+| quadratic regression | 791.7 | 14.4% |
+| gradient boosting | 807.2 | 14.7% |
 
-**28.9% lower error than the rule it replaced.**
+**26.8% lower error than the rule it replaced.**
 
 Where the difference comes from, on a 6,000 income:
 

@@ -38,8 +38,13 @@ WEEKEND = {4, 5}
 
 def make_users(rng, n):
     """One row per synthetic user: income, category taste, discipline."""
-    income = np.round(rng.lognormal(mean=7.2, sigma=0.45, size=n)) + 900
-    income = income.clip(1200, 45000)
+    # The income range has to cover what people actually type into the app.
+    # It originally topped out near 6,800 EGP, which is below the monthly income
+    # of most real users, so the two income features learned relationships from a
+    # slice of the population that does not exist here. A live visitor entering
+    # 25,000 landed hundreds of times outside anything training had seen.
+    income = np.round(rng.lognormal(mean=8.7, sigma=0.75, size=n))
+    income = income.clip(1200, 60000)
 
     # Category preferences, Dirichlet so each user has a believable mix.
     taste = rng.dirichlet(np.full(len(CATEGORIES), 1.4), size=n)

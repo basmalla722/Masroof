@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import { analyse } from "../src/insights.js";
 import { DEFAULT_CATEGORIES } from "../src/data.js";
+import { findCrossing } from "./helpers.js";
 
 const MONTH = new Date().toISOString().slice(0, 7);
 const dateIn = (day) => `${MONTH}-${String(day).padStart(2, "0")}`;
@@ -81,19 +82,43 @@ test("the projection insight is attributed to the model", () => {
 test("a modelled number is labelled as modelled, not sold as fact", () => {
   // The projection is trained on synthetic data. Anything derived from it must
   // say so in the UI, otherwise a live visitor reads it as measured.
-  // Under income, so over-income stays quiet and the projection is reached.
+  //
+  // The income is searched for rather than hardcoded: the threshold moves every
+  // time the model is retrained, and a test that pins a number from one
+  // training run fails on the next one for no real reason.
   const spend = [
-    tx(1, "Canteen", 180, "Food", 2),
-    tx(2, "Bus", 240, "Transport", 3),
-    tx(3, "Notebook", 600, "Other", 4),
-    tx(4, "Groceries", 900, "Food", 5),
-    tx(5, "Gym", 700, "Health", 6),
+    tx(1, "Notebook", 2500, "Other", 4),
+    tx(2, "Groceries", 900, "Food", 5),
+    tx(3, "Bus", 560, "Transport", 12),
   ];
-  const insight = find(analyse(spend, {}, MONTH, 2700), "income-pace");
-  assert.ok(insight, "expected the projection to fire for this spend");
+  const total = spend.reduce((sum, t) => sum + t.amount, 0);
+  const hit = findCrossing(spend, total);
+
+  assert.ok(hit, "no income made the model project a shortfall, so this went untested");
+  assert.ok(hit.income > total, "the crossing must be a shortfall, not an overspend");
+
+  const insight = find(analyse(spend, {}, MONTH, hit.income), "income-pace");
+  assert.ok(insight, `expected the projection insight at income ${hit.income}`);
   assert.ok(insight.note, "a model-backed insight must carry a provenance note");
   assert.match(insight.note, /simulated|experimental|synthetic/i);
 });
+
+test("the projection insight quotes the model, not the flat rule", () => {
+  const spend = [
+    tx(1, "Notebook", 2500, "Other", 4),
+    tx(2, "Groceries", 900, "Food", 5),
+    tx(3, "Bus", 560, "Transport", 12),
+  ];
+  const total = spend.reduce((sum, t) => sum + t.amount, 0);
+  const hit = findCrossing(spend, total);
+  assert.ok(hit, "expected a crossing income to exist");
+
+  const insight = find(analyse(spend, {}, MONTH, hit.income), "income-pace");
+  assert.ok(insight);
+  assert.match(insight.body, /A model trained on spending patterns/);
+  assert.doesNotMatch(insight.body, /NaN|undefined/);
+});
+
 
 test("expenses from another month are not counted", () => {
   // The app does answer an empty month with an "on track" note, which is

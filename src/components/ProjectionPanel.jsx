@@ -21,13 +21,22 @@ export default function ProjectionPanel({ monthTransactions, income }) {
   const naive = naiveProjection(input);
   const gap = Math.abs(projection.projected - naive);
   const progress = Math.round((elapsed / Math.max(daysInMonth, 1)) * 100);
+  const declined = projection.method !== "model";
 
   return (
     <section className="card projection-card">
       <div className="projection-head">
         <h2>Where this month is heading</h2>
-        <span className="badge">{projection.method === "model" ? "trained model" : "fallback rule"}</span>
+        <span className="badge">{declined ? "flat-rate rule" : "trained model"}</span>
       </div>
+
+      {declined && (
+        <p className="projection-why">
+          {income > 0
+            ? "The model did not recognise this month, so it is showing the old rule rather than guessing."
+            : "Set your income and the model can take over from the flat rule."}
+        </p>
+      )}
 
       <div className="projection-figures">
         <div className="projection-figure">
@@ -48,10 +57,11 @@ export default function ProjectionPanel({ monthTransactions, income }) {
           : "."}
       </p>
 
-      {projection.error != null && (
+      {projection.error != null && !declined && (
         <p className="projection-why">
-          Typical miss on unseen months: about {formatCurrency(Math.round(projection.error))},
-          narrowing as the month goes on.
+          Typical miss across all users: about {formatCurrency(Math.round(projection.error))},
+          narrowing as the month goes on. That is an average, not a range for this
+          particular month.
         </p>
       )}
 
