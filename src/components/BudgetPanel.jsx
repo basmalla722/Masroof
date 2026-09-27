@@ -2,11 +2,19 @@ import { useState } from "react";
 import { useCategories } from "../context/CategoriesContext";
 import { colorFor, findCategory } from "../data";
 import { formatCurrency } from "../utils/format";
+import Reveal from "./Reveal";
 
 const OTHER = "Other";
 
-export default function BudgetPanel({ budget, onSet, onDelete, onClearAll }) {
-  const { categories } = useCategories();
+export default function BudgetPanel({
+  budget,
+  onSet,
+  onDelete,
+  onClearAll,
+  categories: categoriesProp,
+}) {
+  const { categories: defaults } = useCategories();
+  const categories = categoriesProp ?? defaults;
   const [category, setCategory] = useState(categories[0]?.name ?? "Food");
   const [customName, setCustomName] = useState("");
   const [value, setValue] = useState("");
@@ -40,7 +48,7 @@ export default function BudgetPanel({ budget, onSet, onDelete, onClearAll }) {
               {c.name}
             </option>
           ))}
-          <option value={OTHER}>Other</option>
+          {!categories.some((c) => c.name === "Other") && <option value="Other">Other</option>}
         </select>
 
         {category === OTHER && (
@@ -90,11 +98,11 @@ export default function BudgetPanel({ budget, onSet, onDelete, onClearAll }) {
         <p className="empty">No limits set yet.</p>
       ) : (
         <ul className="list">
-          {limits.map(([name, amount]) => {
+          {limits.map(([name, amount], index) => {
             const meta = findCategory(categories, name);
             const color = meta?.color ?? colorFor(name);
             return (
-              <li key={name}>
+              <Reveal as="li" key={name} delay={Math.min(index, 8) * 55}>
                 <div className="list-main">
                   <span className="badge" style={{ background: `${color}22` }} />
                   <span className="list-text">
@@ -110,7 +118,7 @@ export default function BudgetPanel({ budget, onSet, onDelete, onClearAll }) {
                 >
                   ✕
                 </button>
-              </li>
+              </Reveal>
             );
           })}
         </ul>

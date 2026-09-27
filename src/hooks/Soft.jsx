@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import useInView from "./useInView";
 
 const REVEAL_MS = 620;
 
@@ -12,33 +13,13 @@ export default function Soft({
   gain = 0.18,
   className = "",
 }) {
-  const ref = useRef(null);
-  const [inView, setInView] = useState(false);
+  const [ref, inView] = useInView({ threshold: 0.05 });
   const [settled, setSettled] = useState(false);
+  const nodeRef = useRef(null);
 
   useEffect(() => {
-    const node = ref.current;
-    if (!node) return;
-
-    if (typeof IntersectionObserver === "undefined") {
-      setInView(true);
-      setSettled(true);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          setInView(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.05, rootMargin: "0px 0px -4% 0px" }
-    );
-
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
+    nodeRef.current = ref.current;
+  }, [ref, inView]);
 
   useEffect(() => {
     if (!inView) return;
@@ -47,7 +28,7 @@ export default function Soft({
   }, [inView, delay]);
 
   useEffect(() => {
-    const node = ref.current;
+    const node = nodeRef.current;
     if (!node || !settled) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 

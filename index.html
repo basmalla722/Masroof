@@ -7,10 +7,14 @@
     <title>Masroof</title>
     <script>
       try {
-        var saved = localStorage.getItem("expense-tracker-theme");
-        if (saved === "dark") {
+        var theme =
+          localStorage.getItem("masroof-theme") ||
+          localStorage.getItem("expense-tracker-theme");
+        if (theme === "dark") {
           document.documentElement.setAttribute("data-theme", "dark");
         }
+        var motion = localStorage.getItem("masroof-motion");
+        if (motion) document.documentElement.setAttribute("data-motion", motion);
       } catch (error) {}
     </script>
   </head>

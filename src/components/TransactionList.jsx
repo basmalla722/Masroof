@@ -1,5 +1,7 @@
 import { DEFAULT_CATEGORIES, findCategory } from "../data";
-import { formatCurrency, formatDate } from "../utils/format";
+import { formatCurrency, relativeDay } from "../utils/format";
+import { NoResults } from "./states";
+import Reveal from "./Reveal";
 
 export default function TransactionList({
   transactions,
@@ -10,27 +12,45 @@ export default function TransactionList({
   onQueryChange,
   onEdit,
   onDelete,
+  onDeleteAll,
+  total,
 }) {
   const fallback = { color: "#8a7d78" };
+  const count = total ?? transactions.length;
 
   return (
     <div className="card">
-      <h2>Transactions ({transactions.length})</h2>
+      <div className="card-head">
+        <h2>Transactions ({count})</h2>
+        {onDeleteAll && count > 0 && (
+          <button
+            className="mini danger"
+            onClick={() => {
+              if (window.confirm("Delete every expense? This cannot be undone.")) {
+                onDeleteAll();
+              }
+            }}
+          >
+            Delete all
+          </button>
+        )}
+      </div>
 
       <div className="toolbar">
         <input
           type="search"
           value={query}
           onChange={(event) => onQueryChange(event.target.value)}
-          placeholder="Search by name…"
+          placeholder="Search by name or category…"
           aria-label="Search transactions"
         />
       </div>
 
       <div className="chips">
         <button
-          className={`chip ${filter === "All" ? "active" : ""}`}
-          onClick={() => onFilterChange("All")}
+          className={`chip ${filter === "all" ? "active" : ""}`}
+          onClick={() => onFilterChange("all")}
+          aria-pressed={filter === "all"}
         >
           All
         </button>
@@ -39,6 +59,7 @@ export default function TransactionList({
             key={category.name}
             className={`chip ${filter === category.name ? "active" : ""}`}
             onClick={() => onFilterChange(category.name)}
+            aria-pressed={filter === category.name}
           >
             {category.name}
           </button>
@@ -46,13 +67,21 @@ export default function TransactionList({
       </div>
 
       {transactions.length === 0 ? (
-        <p className="empty">Nothing matches. Try a different filter.</p>
+        query.trim() ? (
+          <NoResults query={query.trim()} onClear={() => onQueryChange("")} />
+        ) : (
+          <p className="empty">Nothing in this category yet.</p>
+        )
       ) : (
         <ul className="list">
-          {transactions.map((transaction) => {
+          {transactions.map((transaction, index) => {
             const category = findCategory(categories, transaction.category) ?? fallback;
             return (
-              <li key={transaction.id}>
+              <Reveal
+                as="li"
+                key={transaction.id}
+                delay={Math.min(index, 8) * 55}
+              >
                 <div className="list-main">
                   <span
                     className="badge"
@@ -61,7 +90,7 @@ export default function TransactionList({
                   <span className="list-text">
                     <span className="list-title">{transaction.title}</span>
                     <span className="list-meta">
-                      {transaction.category} · {formatDate(transaction.date)}
+                      {transaction.category} · {relativeDay(transaction.date)}
                     </span>
                   </span>
                 </div>
@@ -84,7 +113,7 @@ export default function TransactionList({
                     Delete
                   </button>
                 </div>
-              </li>
+              </Reveal>
             );
           })}
         </ul>
