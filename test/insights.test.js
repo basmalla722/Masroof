@@ -78,6 +78,23 @@ test("the projection insight is attributed to the model", () => {
   assert.doesNotMatch(insight.body, /NaN/);
 });
 
+test("a modelled number is labelled as modelled, not sold as fact", () => {
+  // The projection is trained on synthetic data. Anything derived from it must
+  // say so in the UI, otherwise a live visitor reads it as measured.
+  // Under income, so over-income stays quiet and the projection is reached.
+  const spend = [
+    tx(1, "Canteen", 180, "Food", 2),
+    tx(2, "Bus", 240, "Transport", 3),
+    tx(3, "Notebook", 600, "Other", 4),
+    tx(4, "Groceries", 900, "Food", 5),
+    tx(5, "Gym", 700, "Health", 6),
+  ];
+  const insight = find(analyse(spend, {}, MONTH, 2700), "income-pace");
+  assert.ok(insight, "expected the projection to fire for this spend");
+  assert.ok(insight.note, "a model-backed insight must carry a provenance note");
+  assert.match(insight.note, /simulated|experimental|synthetic/i);
+});
+
 test("expenses from another month are not counted", () => {
   // The app does answer an empty month with an "on track" note, which is
   // deliberate. What must not happen is the old expense being counted.

@@ -65,7 +65,7 @@ browser data clears your expenses, and there is no sync between devices.
 | Charts | hand-written SVG |
 | Storage | `localStorage` behind one hook |
 | Dependencies in `package.json` | `react`, `react-dom`. That is it. |
-| Tests | 25, on Node's built-in runner. No framework. |
+| Tests | 26, on Node's built-in runner. No framework. |
 | CI | GitHub Actions: install, test, build |
 
 ## Screenshots
@@ -134,9 +134,11 @@ model/
   requirements.txt                   pinned, for reproducing the training
 ```
 
-The `src/` tree is complete. There is no unreferenced code left in it: the
-Gemini advisor that used to sit here was dead weight, so it was removed rather
-than shipped and documented as "planned".
+The `src/` tree is complete. The Gemini advisor that used to sit here was 308
+lines that no view imported, so it was deleted rather than shipped and
+documented as "planned". `modelInfo` is the one deliberate exception to
+"nothing unreferenced": it is re-exported from `insights.js` for a view that
+labels the projection, and is currently read only by the test suite.
 
 Outside `src/`, the model is trained in Python. `npm run train` regenerates
 `src/ml/weights.js` from scratch. The training data itself is not committed; it
@@ -295,7 +297,7 @@ The build output is a static `dist/` folder, so any static host works.
 npm test
 ```
 
-25 tests, no test framework installed. They run on Node's built-in runner
+26 tests, no test framework installed. They run on Node's built-in runner
 (`node --test`) because every testable line in this project is a pure function
 over plain data. The one deliberate constraint: the trained weights are emitted
 as a `.js` module rather than `.json` specifically so `node --test` can import
@@ -306,7 +308,7 @@ count at two.
 |---|---|
 | `test/features.test.js` | the feature vector matches the declared names, and no input produces `NaN` |
 | `test/predict.test.js` | the model still beats the rule it replaced, a projection is never below money already spent, the error band narrows late in the month |
-| `test/insights.test.js` | each spending rule fires when it should and stays quiet when it should not, and no insight body can leak `NaN` or `undefined` |
+| `test/insights.test.js` | each spending rule fires when it should and stays quiet when it should not, no insight body can leak `NaN`, and a modelled number must carry a provenance note |
 
 Two of these are regression guards rather than unit tests. `predict.test.js`
 asserts the exact MAE pair from `model/report.txt`, and CI re-checks it, so
@@ -329,7 +331,7 @@ npm run train
   that the features carry signal. They are not a claim about anyone's real
   month, and the projection is not advice. The honest next step is logging
   predictions and outcomes from real users, then retraining on that.
-- No component or DOM tests. The pure logic is covered; React rendering is not.
+- No component or DOM tests. The pure logic is covered; React rendering is not. The one known exception is .insight-note, which is asserted in `test/insights.test.js` but has no rendering test.
 - No ESLint or Prettier config yet.
 - Screenshots in this README predate the footer removal and the model, so they
   show an older build.

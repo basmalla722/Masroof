@@ -13,8 +13,8 @@ export function currentMonthKey() {
   return new Date().toISOString().slice(0, 7);
 }
 
-// Exposed so the Budgets view can label the projection and be honest about
-// where the number came from.
+// The trained model's own metadata, so a view can label a projection and state
+// where the number came from instead of implying it is measured fact.
 export { modelInfo };
 
 export function analyse(
@@ -96,6 +96,7 @@ export function analyse(
           )} a day. A model trained on spending patterns puts your month at about ${formatCurrency(
             Math.round(projection.projected)
           )}${range}.`,
+          note: "Experimental. The model was trained on simulated spending, not on real accounts.",
         });
       }
     }

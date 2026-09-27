@@ -61,6 +61,7 @@ export default function InsightsPanel({ insights, onApplyLimit }) {
               </button>
             </div>
             <p className="insight-body">{insight.body}</p>
+            {insight.note && <p className="insight-note">{insight.note}</p>}
             {insight.level === "critical" && onApplyLimit && insight.category && (
               <button className="mini" onClick={() => onApplyLimit(insight.category)}>
                 Adjust limit
