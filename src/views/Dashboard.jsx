@@ -100,7 +100,7 @@ export default function Dashboard() {
       </Soft>
 
       <Soft delay={140}>
-        <InsightsPanel insights={insights} />
+        <InsightsPanel insights={insights} showHeading={false} />
       </Soft>
     </>
   );

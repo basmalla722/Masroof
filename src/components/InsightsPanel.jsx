@@ -10,7 +10,7 @@ const ICONS = {
 
 export const DISMISSED_INSIGHTS_KEY = "masroof-dismissed-insights";
 
-export default function InsightsPanel({ insights, onApplyLimit }) {
+export default function InsightsPanel({ insights, onApplyLimit, showHeading = true }) {
   const [dismissed, setDismissed] = useLocalStorage(DISMISSED_INSIGHTS_KEY, []);
 
   const shown = insights.filter((insight) => !dismissed.includes(insight.id));
@@ -25,14 +25,16 @@ export default function InsightsPanel({ insights, onApplyLimit }) {
 
   return (
     <div className="card insights">
-      <div className="insights-head">
-        <h2>What your spending is telling you</h2>
-        {shown.length > 0 && (
-          <button className="mini danger" onClick={clearAll}>
-            Delete all
-          </button>
-        )}
-      </div>
+      {showHeading && (
+        <div className="insights-head">
+          <h2>What your spending is telling you</h2>
+          {shown.length > 0 && (
+            <button className="mini danger" onClick={clearAll}>
+              Delete all
+            </button>
+          )}
+        </div>
+      )}
 
       {shown.length === 0 ? (
         <p className="hint-text">

@@ -1,4 +1,4 @@
-﻿import { DEFAULT_CATEGORIES } from "./data.js";
+import { DEFAULT_CATEGORIES } from "./data.js";
 import { predict, modelInfo } from "./ml/predict.js";
 import { projectionInput, monthTotals } from "./ml/month.js";
 import { currentMonthKey } from "./ml/monthKey.js";
@@ -35,6 +35,26 @@ export function analyse(
 
 
   if (income > 0) {
+    // Computed before the branches below, and on purpose. It used to sit in an
+    // else-if, which meant that the moment spending passed income the model was
+    // never called at all. That is backwards: being over income is exactly when
+    // the user most wants to know where the month lands. How bad it gets is a
+    // different question from whether you have already overshot.
+    const isCurrent = month === currentMonthKey();
+    const timing = isCurrent ? projectionInput(monthItems, income, month) : null;
+    // The projection comes from a model trained offline, not a spend-rate rule.
+    // It beats that rule by ~27% MAE on held-out users, because real months are
+    // not flat: payday, weekends and a quiet last few days all bend the curve.
+    // See model/train.py.
+    const projection = isCurrent ? predict(timing.input) : null;
+    const projectionText = () => {
+      if (!projection) return "";
+      const range = projection.error
+        ? ` (give or take ${formatCurrency(Math.round(projection.error))})`
+        : "";
+      return ` at about ${formatCurrency(Math.round(projection.projected))}${range}`;
+    };
+
     if (total > income) {
       insights.push({
         id: "over-income",
@@ -44,39 +64,34 @@ export function analyse(
           income
         )} and your expenses this month are ${formatCurrency(
           total
-        )} - a shortfall of ${formatCurrency(total - income)}.`,
+        )} - a shortfall of ${formatCurrency(total - income)}.${
+          isCurrent
+            ? ` You are spending about ${formatCurrency(
+                Math.round(total / timing.elapsed)
+              )} a day, which puts the month${projectionText()}.`
+            : ""
+        }`,
+        note: isCurrent
+          ? "Experimental. The model was trained on simulated spending, not on real accounts."
+          : undefined,
       });
-    } else if (month === currentMonthKey()) {
-      const { input, elapsed } = projectionInput(monthItems, income, month);
-      // The projection comes from a model trained offline, not a spend-rate
-      // rule. It beats the naive rule by ~29% MAE on held-out users, because
-      // real months are not flat: payday, weekends and a quiet last few days
-      // all bend the curve. See model/train.py.
-      const projection = predict(input);
-
-      if (projection.projected > income) {
-        const range = projection.error
-          ? ` (give or take ${formatCurrency(Math.round(projection.error))})`
-          : "";
-
-        insights.push({
-          id: "income-pace",
-          level: "warning",
-          title: "At this pace you will finish the month in the red",
-          body: `You have ${formatCurrency(
-            income - total
-          )} left of ${formatCurrency(
-            income
-          )}, but you are spending about ${formatCurrency(
-            Math.round(total / elapsed)
-          )} a day. A model trained on spending patterns puts your month at about ${formatCurrency(
-            Math.round(projection.projected)
-          )}${range}.`,
-          note: "Experimental. The model was trained on simulated spending, not on real accounts.",
-        });
-      }
+    } else if (projection && projection.projected > income) {
+      insights.push({
+        id: "income-pace",
+        level: "warning",
+        title: "At this pace you will finish the month in the red",
+        body: `You have ${formatCurrency(
+          income - total
+        )} left of ${formatCurrency(
+          income
+        )}, but you are spending about ${formatCurrency(
+          Math.round(total / timing.elapsed)
+        )} a day. A model trained on spending patterns puts your month${projectionText()}.`,
+        note: "Experimental. The model was trained on simulated spending, not on real accounts.",
+      });
     }
   }
+
 
   const overspent = categories.filter(
     (c) => limitOf(c.name) > 0 && byCategory[c.name] > limitOf(c.name)

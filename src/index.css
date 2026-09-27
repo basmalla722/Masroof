@@ -544,13 +544,6 @@ button {
   font-variant-numeric: tabular-nums;
 }
 
-.badge {
-  width: 11px;
-  height: 11px;
-  flex: 0 0 auto;
-  border-radius: 50%;
-}
-
 .chips {
   display: flex;
   flex-wrap: wrap;
@@ -801,33 +794,19 @@ button {
   padding-inline-start: 8px;
 }
 
+/* The colour dot beside a category name in the budget and list rows. */
+.badge {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
 .projection-card {
   display: flex;
   flex-direction: column;
   gap: 13px;
-}
-
-.projection-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-}
-
-.projection-head h2 {
-  margin: 0;
-}
-
-.badge {
-  flex: none;
-  font-size: 13.5px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--muted);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 3px 9px;
-  white-space: nowrap;
 }
 
 .projection-figures {

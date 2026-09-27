@@ -103,6 +103,24 @@ test("a modelled number is labelled as modelled, not sold as fact", () => {
   assert.match(insight.note, /simulated|experimental|synthetic/i);
 });
 
+test("spending past your income still reports where the month lands", () => {
+  // Regression guard. The projection used to live in an else-if, so the moment
+  // spending passed income the model was never called. Being over income is
+  // exactly when the user most wants to know the final figure, so both facts
+  // have to appear together.
+  const spend = [tx(1, "Tuition", 23960, "Other", 6), tx(2, "Food", 1200, "Food", 14)];
+  const income = 17300;
+  const result = analyse(spend, {}, MONTH, income);
+  const insight = find(result, "over-income");
+
+  assert.ok(insight, "expected the over-income insight");
+  assert.match(insight.body, amount(income * 0 + (23960 + 1200 - income)));
+  // The projection is quoted, not just the overspend.
+  assert.match(insight.body, /puts the month at about/);
+  assert.doesNotMatch(insight.body, /NaN/);
+  assert.ok(insight.note, "the projection is in this insight, so it needs its provenance");
+});
+
 test("the projection insight quotes the model, not the flat rule", () => {
   const spend = [
     tx(1, "Notebook", 2500, "Other", 4),

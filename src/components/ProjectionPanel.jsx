@@ -25,23 +25,19 @@ export default function ProjectionPanel({ monthTransactions, income }) {
 
   return (
     <section className="card projection-card">
-      <div className="projection-head">
-        <h2>Where this month is heading</h2>
-        <span className="badge">{declined ? "flat-rate rule" : "trained model"}</span>
-      </div>
-
-      {declined && (
-        <p className="projection-why">
-          {income > 0
-            ? "The model did not recognise this month, so it is showing the old rule rather than guessing."
-            : "Set your income and the model can take over from the flat rule."}
-        </p>
-      )}
+      <h2>Where this month is heading</h2>
 
       <div className="projection-figures">
         <div className="projection-figure">
           <span className="plan-figure">{formatCurrency(Math.round(projection.projected))}</span>
           <span className="plan-label">model projection</span>
+          {income > 0 && (
+            <p className="insight-note">
+              Experimental. Trained on {monthsSeen ? monthsSeen.toLocaleString("en-US") : "simulated"}{" "}
+              simulated months, not real accounts. Measured {training?.improvement_pct ?? "far"}%
+              more accurate than the flat-rate rule on held-out users.
+            </p>
+          )}
         </div>
         <div className="projection-figure muted">
           <span className="plan-figure">{formatCurrency(Math.round(naive))}</span>
@@ -57,6 +53,14 @@ export default function ProjectionPanel({ monthTransactions, income }) {
           : "."}
       </p>
 
+      {declined && (
+        <p className="projection-why">
+          {income > 0
+            ? "The model did not recognise this month, so it is showing the old rule rather than guessing."
+            : "Set your income and the model can take over from the flat rule."}
+        </p>
+      )}
+
       {projection.error != null && !declined && (
         <p className="projection-why">
           Typical miss across all users: about {formatCurrency(Math.round(projection.error))},
@@ -65,12 +69,9 @@ export default function ProjectionPanel({ monthTransactions, income }) {
         </p>
       )}
 
-      <p className="insight-note">
-        Experimental. Trained on {monthsSeen ? monthsSeen.toLocaleString("en-US") : "simulated"}{" "}
-        simulated months, not real accounts. Measured {training?.improvement_pct ?? "far"}% more
-        accurate than the flat-rate rule on held-out users.
-        {!isCurrent && " Showing a month that has already finished."}
-      </p>
+      {!isCurrent && (
+        <p className="insight-note">Showing a month that has already finished.</p>
+      )}
     </section>
   );
 }
