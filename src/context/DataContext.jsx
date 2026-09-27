@@ -14,6 +14,7 @@ const STORAGE = {
   legacyTheme: "expense-tracker-theme",
   dismissedInsights: "masroof-dismissed-insights",
   legacyDismissedInsights: "expense-tracker-dismissed-insights",
+  removedMotion: "masroof-motion",
 };
 
 function readLegacy() {
@@ -59,6 +60,7 @@ export function DataProvider({ children }) {
         STORAGE.legacyIncome,
         STORAGE.legacyTheme,
         STORAGE.legacyDismissedInsights,
+        STORAGE.removedMotion,
       ]) {
         localStorage.removeItem(key);
       }

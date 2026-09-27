@@ -12,21 +12,19 @@ import Insights from "./views/Insights";
 
 export default function App() {
   const [route, navigate] = useHashRoute();
-  const { theme, toggleTheme, reduced, motion, setMotion } = usePreferences();
+  const { theme, toggleTheme, reduced } = usePreferences();
   const { transactions, monthTransactions, budget } = useData();
   const { categories } = useCategories();
   const { allCategories } = useDerived();
   const headRef = useRef(null);
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: motion === "system" ? "auto" : "smooth" });
-  }, [route, motion]);
+    window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
+  }, [route, reduced]);
 
   useEffect(() => {
-    const root = document.documentElement;
-    root.setAttribute("data-theme", theme);
-    root.setAttribute("data-motion", motion);
-  }, [theme, motion]);
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
 
   const spent = monthTransactions.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
 
@@ -74,18 +72,6 @@ export default function App() {
         <p>
           Built with React and Vite. Data stays in this browser — nothing is uploaded.
         </p>
-        <label className="motion-toggle">
-          <span>Animations</span>
-          <select
-            value={motion}
-            onChange={(event) => setMotion(event.target.value)}
-            aria-label="Animation preference"
-          >
-            <option value="system">Follow my system</option>
-            <option value="full">Always on</option>
-            <option value="calm">Minimal</option>
-          </select>
-        </label>
       </footer>
     </div>
   );

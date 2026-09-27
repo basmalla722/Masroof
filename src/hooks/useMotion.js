@@ -7,31 +7,18 @@ function systemPrefersReduced() {
   return window.matchMedia(QUERY).matches;
 }
 
+// Motion is not configurable. The OS decides.
 export function useMotion() {
-  // "system" follows the OS, "full" and "calm" override it.
-  const [preference, setPreference] = useState(() => {
-    try {
-      return localStorage.getItem("masroof-motion") || "system";
-    } catch {
-      return "system";
-    }
-  });
+  const [reduced, setReduced] = useState(systemPrefersReduced);
 
   useEffect(() => {
-    try {
-      localStorage.setItem("masroof-motion", preference);
-    } catch {
-      /* storage blocked, the app still works */
-    }
-  }, [preference]);
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const media = window.matchMedia(QUERY);
+    const onChange = (event) => setReduced(event.matches);
+    setReduced(media.matches);
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, []);
 
-  const reduced = preference === "system" && systemPrefersReduced();
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (preference === "calm") root.setAttribute("data-motion", "calm");
-    else root.removeAttribute("data-motion");
-  }, [preference]);
-
-  return { reduced, preference, setPreference };
+  return { reduced };
 }

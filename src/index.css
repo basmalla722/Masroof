@@ -301,24 +301,6 @@ main:focus {
   margin: 0;
 }
 
-.motion-toggle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-}
-
-.motion-toggle select {
-  padding: 5px 9px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--card);
-  color: var(--text);
-  font: inherit;
-  font-size: 13px;
-  cursor: pointer;
-}
-
 /* =========================================================
    cards
    ========================================================= */
@@ -1206,18 +1188,6 @@ button {
 
 .shake {
   animation: shake 0.42s var(--ease);
-}
-
-/* "Minimal" preference: keep the reveal, drop the movement. */
-[data-motion="calm"] .soft,
-[data-motion="calm"] .reveal-item,
-[data-motion="calm"] .rise {
-  transform: none;
-}
-
-[data-motion="calm"] .logo-shine,
-[data-motion="calm"] .shake {
-  animation: none;
 }
 
 /* Respect the OS setting, whatever the in-app preference says. */

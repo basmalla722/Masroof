@@ -81,13 +81,13 @@ browser data clears your expenses, and there is no sync between devices.
 ```
 src/
   main.jsx                            provider order: preferences > data > categories
-  App.jsx                             layout, routing, theme, motion
+  App.jsx                             layout, routing, theme
   index.css                          all styling, design tokens, responsive, reduced motion
   data.js                            default categories, palette, colour from name
   insights.js                        every spending rule, pure functions
   advisor.css                        styles for the unfinished advisor only
   context/
-    PreferencesContext.jsx           theme and motion preference
+    PreferencesContext.jsx           theme preference
     DataContext.jsx                  transactions, budget, income + all mutations
     CategoriesContext.jsx            the five default categories
   hooks/
@@ -170,9 +170,10 @@ transition once the reveal has finished, so the scroll handler can write
 `requestAnimationFrame`-throttled and the listeners are passive.
 
 **Animations are not decoration.** Every animation here either shows where
-something came from or confirms something happened. There is a motion setting
-in the footer, and `prefers-reduced-motion` is respected regardless of what that
-setting says — the OS setting wins.
+something came from or confirms something happened. There is no in-app switch for
+them: `prefers-reduced-motion` is the only control, and when the OS asks for
+reduced motion the animations stop. There is deliberately no way to override
+that from inside the app.
 
 **Colour is derived, not stored.** A custom category name is hashed into a
 ten-colour palette, so it always gets a stable colour and never collides with a
@@ -184,9 +185,7 @@ neighbour's.
 - Every interactive element reachable and visible on keyboard focus
 - Icon-only buttons carry `aria-label` and `title`
 - Form errors are text, not just a red border, and focus moves to the first one
-- `prefers-reduced-motion` disables animation. The footer motion setting can
-  dial motion down further, but it cannot switch animation back on against the
-  OS setting — the OS setting always wins.
+- `prefers-reduced-motion` disables animation, and there is no in-app override
 
 ## Running it
 

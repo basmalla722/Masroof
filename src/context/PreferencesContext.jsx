@@ -6,7 +6,7 @@ const PreferencesContext = createContext(null);
 
 export function PreferencesProvider({ children }) {
   const [theme, setTheme] = useLocalStorage("masroof-theme", "light");
-  const { reduced, preference, setPreference } = useMotion();
+  const { reduced } = useMotion();
 
   const value = useMemo(
     () => ({
@@ -14,10 +14,8 @@ export function PreferencesProvider({ children }) {
       setTheme,
       toggleTheme: () => setTheme(theme === "light" ? "dark" : "light"),
       reduced,
-      motion: preference,
-      setMotion: setPreference,
     }),
-    [theme, setTheme, reduced, preference, setPreference]
+    [theme, setTheme, reduced]
   );
 
   return (
