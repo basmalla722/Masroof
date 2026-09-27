@@ -26,7 +26,9 @@ function num(value, fallback = 0) {
   return Number.isFinite(n) ? n : fallback;
 }
 
-export function projectEndOfMonth(input = {}) {
+export function projectEndOfMonth(raw) {
+  // `raw = {}` as a default only covers undefined, so null needs handling too.
+  const input = raw || {};
   const span = Math.max(num(input.daysInMonth, 1), 1);
   const past = Math.min(Math.max(num(input.elapsed, 1), 1), span);
   const spent = Math.max(num(input.total, 0), 0);

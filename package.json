@@ -1,12 +1,16 @@
 {
-  "name": "expense-tracker",
+  "name": "masroof",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
+  "description": "A spending tracker that tells you what to do before you run out of money.",
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test test/*.test.js",
+    "train": "python model/generate_data.py && python model/train.py"
   },
   "dependencies": {
     "react": "^18.3.1",

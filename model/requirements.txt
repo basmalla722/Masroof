@@ -1,0 +1,5 @@
+# Pinned so `model/train.py` reproduces the numbers in model/report.txt on any
+# machine. The app itself does not need Python: inference ships as flat
+# coefficients in src/ml/weights.js.
+numpy==2.5.3
+scikit-learn==1.9.1

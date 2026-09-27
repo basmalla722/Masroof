@@ -1,6 +1,6 @@
-﻿import { DEFAULT_CATEGORIES } from "./data";
-import { predict, modelInfo } from "./ml/predict";
-import { formatCurrency, monthKey } from "./utils/format";
+﻿import { DEFAULT_CATEGORIES } from "./data.js";
+import { predict, modelInfo } from "./ml/predict.js";
+import { formatCurrency, monthKey } from "./utils/format.js";
 
 const SHARE_ALERT = 0.35;
 const SAVINGS_CUT = 0.2;

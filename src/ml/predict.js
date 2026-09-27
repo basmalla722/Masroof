@@ -9,8 +9,8 @@
 // spend-rate rule the app used before the model existed, so the feature keeps
 // working either way.
 
-import weights from "./weights.json";
-import { projectEndOfMonth, FEATURE_NAMES } from "./features";
+import weights from "./weights.js";
+import { projectEndOfMonth, FEATURE_NAMES } from "./features.js";
 
 const COEFFICIENTS = weights.coefficients || [];
 const INTERCEPT = weights.intercept || 0;

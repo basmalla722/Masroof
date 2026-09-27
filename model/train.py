@@ -204,11 +204,22 @@ def main():
     }
 
     os.makedirs(os.path.join(ROOT, "src", "ml"), exist_ok=True)
-    with open(os.path.join(ROOT, "src", "ml", "weights.json"), "w") as fh:
-        json.dump(weights, fh, indent=2)
-        fh.write("\n")
 
-    print(f"\nwrote src/ml/weights.json and model/report.txt")
+    # Emitted as a .js module rather than .json on purpose: a plain JS module
+    # imports cleanly in Vite AND in `node --test`, whereas JSON imports need
+    # import attributes outside a bundler. Keeping it JS is what lets the test
+    # suite run with zero dependencies.
+    js = (
+        "// GENERATED FILE - do not edit.\n"
+        "// Produced by model/train.py from synthetic data (model/generate_data.py).\n"
+        "// Inference lives in src/ml/predict.js.\n"
+        "\n"
+        "export default " + json.dumps(weights, indent=2) + ";\n"
+    )
+    with open(os.path.join(ROOT, "src", "ml", "weights.js"), "w") as fh:
+        fh.write(js)
+
+    print("\nwrote src/ml/weights.js and model/report.txt")
 
 
 if __name__ == "__main__":
