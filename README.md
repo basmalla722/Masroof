@@ -8,6 +8,8 @@ you in plain language.
 
 No account, no backend. Everything stays in the browser.
 
+![Dashboard](docs/dashboard.png)
+
 ---
 
 ## Overview
@@ -65,19 +67,13 @@ not the chart.
 
 ## Screenshots
 
-Not captured yet. To generate them, run the app locally with some sample data
-in it and capture each view:
-
-| File | Route |
+| Expenses | Budgets |
 |---|---|
-| `docs/dashboard.png` | `#/dashboard` |
-| `docs/expenses.png` | `#/expenses` |
-| `docs/budgets.png` | `#/budgets` |
-| `docs/insights.png` | `#/insights` |
+| ![Expenses](docs/expenses.png) | ![Budgets](docs/budgets.png) |
 
-In Chrome or Edge, open DevTools, press `Ctrl+Shift+P`, run
-`Capture full size screenshot`, and save into `docs/`. The live demo is the
-faster place to do it if you would rather not run anything locally.
+| Insights | Dashboard |
+|---|---|
+| ![Insights](docs/insights.png) | ![Dashboard](docs/dashboard.png) |
 
 ## Architecture
 
