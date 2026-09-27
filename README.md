@@ -1,28 +1,29 @@
 # Masroof
 
-**Live demo → [masroof-sigma.vercel.app](https://masroof-sigma.vercel.app/)**
+> A spending tracker that tells you what to do before you run out of money.
 
-A spending tracker that tells you what to do before you run out of money. Add
-your expenses, set a limit per category, and the app reads the numbers back to
-you in plain language.
-
-No account, no backend. Everything stays in the browser.
+**[Live demo →](https://masroof-sigma.vercel.app/)** · **[Source code →](https://github.com/basmalla722/Masroof)**
 
 ![Dashboard](docs/dashboard.png)
 
----
-
-## Overview
+## Why Masroof?
 
 Most expense trackers are a table and a total. The part that is actually hard is
-the advice: is this month fine, or is it already too late? Masroof takes
-expenses, a budget per category, and a monthly income, then produces a small set
-of concrete warnings — over budget, on track to overshoot, one category eating
-the month, spending above income, and what is safe to spend per day for the rest
-of the month.
+the advice: is this month fine, or is it already too late?
 
-Everything is written in plain English on purpose. The insights are the product,
-not the chart.
+Masroof takes expenses, a budget per category, and a monthly income, then
+produces a small set of concrete warnings — over budget, on track to overshoot,
+one category eating the month, spending above income, and what is safe to spend
+per day for the rest of the month.
+
+The insights are the product, not the chart. Everything is written in plain
+English on purpose.
+
+## Privacy
+
+No account, no backend, no server-side storage. Data is stored locally in your
+browser using `localStorage`, and it never leaves your device. Clearing your
+browser data clears your expenses, and there is no sync between devices.
 
 ## Features
 
@@ -79,36 +80,53 @@ not the chart.
 
 ```
 src/
-  main.jsx                  provider order: preferences > data > categories
-  App.jsx                   layout, routing, theme
-  data.js                   default categories, palette, colour from name
-  insights.js               every spending rule, pure functions
+  main.jsx                            provider order: preferences > data > categories
+  App.jsx                             layout, routing, theme, motion
+  index.css                          all styling, design tokens, responsive, reduced motion
+  data.js                            default categories, palette, colour from name
+  insights.js                        every spending rule, pure functions
+  advisor.css                        styles for the unfinished advisor only
   context/
-    PreferencesContext.jsx  theme and motion preference
-    DataContext.jsx         transactions, budget, income + all mutations
-    CategoriesContext.jsx   the five default categories
+    PreferencesContext.jsx           theme and motion preference
+    DataContext.jsx                  transactions, budget, income + all mutations
+    CategoriesContext.jsx            the five default categories
   hooks/
-    useLocalStorage.js      persistence
-    useInView.js            IntersectionObserver, used by two components
-    useHashRoute.js         routing on window.location.hash
-    useMotion.js            reduced-motion handling
-    Soft.jsx                reveal then scroll-linked parallax
+    useLocalStorage.js               persistence
+    useInView.js                     IntersectionObserver, used by two components
+    useHashRoute.js                  routing on window.location.hash
+    useMotion.js                     reduced-motion handling
+    Soft.jsx                         reveal then scroll-linked parallax
+  utils/
+    format.js                        currency, dates, month keys
   components/
-    charts/                 DonutChart, CategoryBars, DailyTrend
-    states.jsx              empty, no results, error, skeleton
-    TransactionForm.jsx     add and edit
-    TransactionList.jsx     list, search, filter
-    BudgetPanel.jsx         limits
-    InsightsPanel.jsx       insights with dismiss
-    Reveal.jsx              per-item reveal
-    Header.jsx              brand, theme, navigation
-    Logo.jsx                inline SVG
+    states.jsx                       empty, no results, error, skeleton
+    TransactionForm.jsx              add and edit
+    TransactionList.jsx              list, search, filter, delete
+    BudgetPanel.jsx                  limits
+    IncomePanel.jsx                  income and safe daily spend
+    InsightsPanel.jsx                insights with dismiss
+    Summary.jsx                      headline totals on the dashboard
+    Reveal.jsx                       per-item reveal
+    Header.jsx                       brand, theme toggle, navigation
+    Logo.jsx                         inline SVG
+    AdvisorChat.jsx                  NOT MOUNTED, see Planned / unfinished
+    charts/
+      DonutChart.jsx                 category share, one circle + dasharray
+      CategoryBars.jsx               spend per category with limit markers
+      DailyTrend.jsx                 cumulative line with dashed pace line
   views/
-    Dashboard.jsx           charts and summary
-    Expenses.jsx            form and list
-    Budgets.jsx             income, limits, comparison
-    Insights.jsx            grouped rules
+    Dashboard.jsx                    charts and summary
+    Expenses.jsx                     form and list
+    Budgets.jsx                      income, limits, comparison
+    Insights.jsx                     grouped rules
+  services/
+    gemini.js                        NOT MOUNTED, see Planned / unfinished
+    tools.js                         NOT MOUNTED, see Planned / unfinished
 ```
+
+This tree is every file under `src/`. The three marked `NOT MOUNTED` are not
+imported by the running app; they are listed here so the tree matches the
+repository exactly.
 
 ### Data flow
 
@@ -121,16 +139,16 @@ setBudgetLimit  deleteBudgetLimit  clearBudget  setIncome
 ```
 
 `insights.js` is a pure function of `(transactions, budget, month, income,
-categories)`. It has no React in it, which is why the same rules can be reused by
-the Gemini advisor that is not wired up yet, and why they are easy to reason
-about.
+categories)`. It has no React in it, which is what makes the rules easy to test
+and easy to reuse, and it is what a Gemini advisor would sit on top of if that
+part of the project is ever finished.
 
 ## Decisions and challenges
 
 **No chart library.** Recharts is 100 kB+ and a lot more than three small
 charts. The donut is a single circle with `stroke-dasharray`, the bars are
-divs, and the day-by-day line is a path built from cumulative sums. Total
-bundle is 58 kB gzipped for the whole app.
+divs, and the day-by-day line is a path built from cumulative sums. The whole
+app ships 58 kB of gzipped JavaScript and 4 kB of gzipped CSS.
 
 **Custom categories that do not pollute the list.** Picking `Other` lets you type
 a name. The name is stored on that expense only, so you can log "Haircut" once
@@ -139,8 +157,10 @@ exist in your data get a colour derived from the name itself, so the same
 category is always the same colour.
 
 **The old localStorage keys were renamed.** The app moved from `expense-tracker-*`
-to `masroof-*`. `DataProvider` migrates the old values on first load and only
-then clears the old keys, so nothing is lost and a refresh cannot break it.
+to `masroof-*`. `DataProvider` migrates every old value on first load, writes the
+new key, and only then clears the old one, so nothing is lost and a refresh
+cannot break it. `index.html` also reads the old theme key during its inline
+pre-paint script so returning visitors do not get a light-mode flash.
 
 **The scroll animation took two attempts.** The first version used a CSS
 transition to drive a value that JavaScript was also writing, which made
@@ -164,8 +184,9 @@ neighbour's.
 - Every interactive element reachable and visible on keyboard focus
 - Icon-only buttons carry `aria-label` and `title`
 - Form errors are text, not just a red border, and focus moves to the first one
-- `prefers-reduced-motion` disables animation, and an in-app setting can
-  override it either way
+- `prefers-reduced-motion` disables animation. The footer motion setting can
+  dial motion down further, but it cannot switch animation back on against the
+  OS setting — the OS setting always wins.
 
 ## Running it
 
@@ -187,9 +208,18 @@ browser.
 The build output is a static `dist/` folder, so any static host works.
 `vercel.json` and `public/_redirects` are already set up for Vercel and Netlify.
 
-## Notes
+## Planned / unfinished
 
-- The Gemini advisor is not enabled. The code is in `src/services/` and needs
-  `VITE_GEMINI_API_KEY` in `.env.local` if you want to bring it back. `.env*` is
-  gitignored, `.env.example` is not.
-- `src/advisor.css` is only the stylesheet for that unfinished feature.
+These files are in the repository but are **not part of the running app**. They
+are not imported by any view and you will not find them in the live demo.
+
+| File | State |
+|---|---|
+| `src/services/gemini.js` | Gemini API client. Needs `VITE_GEMINI_API_KEY` in `.env.local`. |
+| `src/services/tools.js` | Tool definitions the advisor would call. |
+| `src/components/AdvisorChat.jsx` | Advisor chat UI. Not mounted. |
+| `src/advisor.css` | Styles for that UI only. |
+
+`.env*` is gitignored; `.env.example` is committed and documents the variable
+name. Nothing about this feature is wired into the live demo, and no API key is
+in the repository.

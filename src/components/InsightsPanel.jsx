@@ -8,8 +8,10 @@ const ICONS = {
   good: "✅",
 };
 
+export const DISMISSED_INSIGHTS_KEY = "masroof-dismissed-insights";
+
 export default function InsightsPanel({ insights, onApplyLimit }) {
-  const [dismissed, setDismissed] = useLocalStorage("expense-tracker-dismissed-insights", []);
+  const [dismissed, setDismissed] = useLocalStorage(DISMISSED_INSIGHTS_KEY, []);
 
   const shown = insights.filter((insight) => !dismissed.includes(insight.id));
 

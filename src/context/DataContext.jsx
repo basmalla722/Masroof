@@ -12,6 +12,8 @@ const STORAGE = {
   legacyBudget: "budget",
   legacyIncome: "income",
   legacyTheme: "expense-tracker-theme",
+  dismissedInsights: "masroof-dismissed-insights",
+  legacyDismissedInsights: "expense-tracker-dismissed-insights",
 };
 
 function readLegacy() {
@@ -22,6 +24,7 @@ function readLegacy() {
       budget: JSON.parse(localStorage.getItem(STORAGE.legacyBudget) || "null"),
       income: JSON.parse(localStorage.getItem(STORAGE.legacyIncome) || "null"),
       theme: localStorage.getItem(STORAGE.legacyTheme),
+      dismissedInsights: localStorage.getItem(STORAGE.legacyDismissedInsights),
     };
   } catch {
     return {};
@@ -46,8 +49,17 @@ export function DataProvider({ children }) {
       if (legacy.budget) localStorage.setItem(STORAGE.budget, JSON.stringify(budget));
       if (legacy.income) localStorage.setItem(STORAGE.income, JSON.stringify(income));
       if (legacy.theme) localStorage.setItem("masroof-theme", legacy.theme);
+      if (legacy.dismissedInsights) {
+        localStorage.setItem(STORAGE.dismissedInsights, legacy.dismissedInsights);
+      }
 
-      for (const key of [STORAGE.legacyTransactions, STORAGE.legacyBudget, STORAGE.legacyIncome, STORAGE.legacyTheme]) {
+      for (const key of [
+        STORAGE.legacyTransactions,
+        STORAGE.legacyBudget,
+        STORAGE.legacyIncome,
+        STORAGE.legacyTheme,
+        STORAGE.legacyDismissedInsights,
+      ]) {
         localStorage.removeItem(key);
       }
     } catch {
